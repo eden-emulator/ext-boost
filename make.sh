@@ -17,9 +17,25 @@ rm "$artifact"
 cd "$tag"
 find . -type d \( -name "doc" -o -name "test" -o -name "example" \) -exec rm -rf {} \; || :
 
+# Additional libs to delete
+for lib in phoenix math json fusion spirit; do
+    rm -rf libs/$lib
+done
+
 cd ..
 artifact="$tag.tar"
 tar cf "$artifact" "$tag"
 zstd -10 "$artifact"
 
-echo "-- Done"
+rm -rf "$artifact" "$tag"
+
+mkdir -p artifacts
+mv "$artifact.tar.zst" artifacts
+
+artifact="artifacts/$artifact.tar.zst"
+
+echo "-- Made artifact"
+
+# now release
+gh release create "$VERSION" -t "Boost $VERSION" --notes "Debloated Boost $VERSION"
+gh release upload "$VERSION" "$artifact"
